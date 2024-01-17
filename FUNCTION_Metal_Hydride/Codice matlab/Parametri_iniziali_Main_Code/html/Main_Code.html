@@ -1,0 +1,608 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Main_Code</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-01-12"><meta name="DC.source" content="Main_Code.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Equations to be used</a></li><li><a href="#3">Parameters absorption and desorption</a></li><li><a href="#4">Simulation time for absorption and desorption</a></li><li><a href="#5">Input parameters</a></li><li><a href="#6">Absorption</a></li><li><a href="#7">Desorption</a></li><li><a href="#8">Plot result</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>; clc;
+tic
+</pre><h2 id="2">Equations to be used</h2><p>Calculation of m_s based on the quantity of m_H2 to be absorbed m_s = (m_H2/wt_max) * 100  [kg]    con wt_max = 1.39</p><p>Calculation of hydrogen flowrate m_H2_in based on the quantity absorbed m_H2_in = (2 * m_H2) / 3600  [kg/s]</p><h2 id="3">Parameters absorption and desorption</h2><pre class="codeinput">rho_MH = 8310;        <span class="comment">% Density of LaNi5                   [kg/m3]</span>
+Vg     = 0.0172;      <span class="comment">% Gas Volume                         [m3]</span>
+R      = 8.314;       <span class="comment">% Gas constant                       [J/mol K]</span>
+M_H2   = 2.016/1000;  <span class="comment">% Molar mass H2                      [kg/mol]</span>
+M_MH   = 0.432;       <span class="comment">% Molar mass   MH                    [kg/mol]</span>
+Cp_H2  = 14300;       <span class="comment">% Specific heat H2                   [J/kg K]</span>
+Cp_s   = 355;         <span class="comment">% Specific heat solid                [J/kg K]</span>
+A      = 5.4;         <span class="comment">% Area "heat interchange"            [m2]</span>
+U      = 243;         <span class="comment">% Overall heat transfer coefficient  [W/m2 K]</span>
+sl     = 0.13;        <span class="comment">% Slope coefficient                  [-]</span>
+P0     = 1E+05;       <span class="comment">% Reference pressure                 [Pa]</span>
+m_s    = 143;         <span class="comment">% Solid mass                         [kg]</span>
+SC     = 3;           <span class="comment">% Stoichiometric coefficient         [-]</span>
+Cp_w   = 4.185;       <span class="comment">% Specific heat water                [kJ/kg K]</span>
+</pre><h2 id="4">Simulation time for absorption and desorption</h2><pre class="codeinput">t_abs  = (0:1:1800)';                        <span class="comment">% [s]</span>
+t_des  = (t_abs(end)+1:1:2*t_abs(end)+1)';   <span class="comment">% [s]</span>
+</pre><h2 id="5">Input parameters</h2><pre class="codeinput">m_H2_in   = ones(numel(t_abs),1)*(4/3600);   <span class="comment">% Input hydrogen flowrate               [kg/s]</span>
+m_H2_out  = ones(numel(t_des),1)*(4/3600);   <span class="comment">% Output hydrogen flowrate              [kg/s]</span>
+Tw_in_abs = ones(numel(t_abs),1) * 286;      <span class="comment">% Inlet cooling water temperature       [k]</span>
+Tw_in_des = ones(numel(t_des),1) * 353;      <span class="comment">% Inlet heating water temperature fixed [K]</span>
+m_w_abs   = ones(numel(t_abs),1) * 1.1947;   <span class="comment">% Project water flowrate for absor      [kg/s]</span>
+m_w_des   = ones(numel(t_des),1) * 1.1947;   <span class="comment">% Project water for desorption          [kg/s]</span>
+</pre><h2 id="6">Absorption</h2><pre class="codeinput"><span class="comment">%Absorption parameters</span>
+C_abs      = 59.2;   <span class="comment">% Kinetic constant                   [1/s]</span>
+E_abs      = 21170;  <span class="comment">% Absorption activation energy       [J/mol]</span>
+P_abs      = 8E+05;  <span class="comment">% Absorption pressure                [Pa]</span>
+T_H2_in    = 290;    <span class="comment">% H2 input temperature               [K]</span>
+DH_abs     = -30478; <span class="comment">% Absorption enthalpy                [J/mol]</span>
+DS_abs     = -108;   <span class="comment">% Absorption entropy                 [J/mol K]</span>
+eps_abs    = 10E-10; <span class="comment">% Control value for energy balance   [-]</span>
+
+<span class="comment">% Variable inizialization</span>
+m_H2_abs   = zeros(size(t_abs));  <span class="comment">% Absorbed hydrogen mass           [kg]</span>
+m_MH_abs   = zeros(size(t_abs));  <span class="comment">% Metal hydride mass formed        [kg]</span>
+T_abs      = zeros(size(t_abs));  <span class="comment">% System's temperature             [K]</span>
+Tw_out_abs = zeros(size(t_abs));  <span class="comment">% Outlet water temperature         [K]</span>
+DTb_abs    = zeros(size(t_abs));  <span class="comment">%</span>
+DTa_abs    = zeros(size(t_abs));  <span class="comment">%</span>
+DTml_abs   = zeros(size(t_abs));  <span class="comment">%</span>
+Peq_abs    = zeros(size(t_abs));  <span class="comment">% Equilibrium pressure             [Pa]</span>
+r_abs      = zeros(size(t_abs));  <span class="comment">% Reaction rate                    [1/s]</span>
+
+<span class="comment">% Initial conditions for the first timestep</span>
+m_H2_abs(1)   = 0;                        <span class="comment">% Absorbed hydrogen mass           [kg]</span>
+m_MH_abs(1)   = 0;                        <span class="comment">% Metal hydride mass               [kg]</span>
+T_abs(1)      = 298;                      <span class="comment">% System's temperature             [K]</span>
+Tw_out_abs(1) = Tw_in_abs(1)+10;          <span class="comment">% Initial outlet water temperature [K]</span>
+DTb_abs(1)    = T_abs(1) - Tw_in_abs(1);
+DTa_abs(1)    = T_abs(1) - Tw_out_abs(1);
+DTml_abs(1)   = (DTb_abs(1)-DTa_abs(1))/(log(DTb_abs(1)/DTa_abs(1)));
+
+<span class="keyword">for</span> i = 1:numel(t_abs)-1
+
+    res_abs = 1000;         <span class="comment">% Initial value for the residual</span>
+
+    <span class="keyword">while</span> res_abs &gt; eps_abs <span class="comment">% We repeat the iteration if the energy balance is not verified</span>
+
+    <span class="keyword">if</span> i == 1               <span class="comment">%  "if" used to assign the initial condition based on the "i" index</span>
+        y0_a        = [m_H2_abs(1); m_MH_abs(1); T_abs(1)]; <span class="comment">% Initial conditions for timestep = 1</span>
+        DTb_abs(i)  = DTb_abs(1);
+        DTa_abs(i)  = DTa_abs(1);
+        DTml_abs(i) = (DTb_abs(1)-DTa_abs(1))/(log(DTb_abs(1)/DTa_abs(1)));
+    <span class="keyword">else</span>
+        y0_a        = [m_H2_abs(i); m_MH_abs(i); T_abs(i)]; <span class="comment">% Initial conditions for timestep &gt; 1</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Define tspan for ODE resolution for current timestep</span>
+    tspan = [t_abs(i) t_abs(i+1)];
+
+    <span class="comment">% Function handle</span>
+    ode_fun_a = @(ta, ya) Absorption(ta, ya, m_H2_in(i), Tw_in_abs(i), DTml_abs(i), m_s, A, U, P_abs, C_abs, E_abs, R, M_H2, SC, M_MH, Cp_H2, Cp_s, T_H2_in, DH_abs, DS_abs, sl, P0);
+
+    <span class="comment">% Differential equation solver</span>
+    [ta, ya] = ode23s(ode_fun_a, tspan, y0_a);
+
+    <span class="comment">% Store solutions for current timestep</span>
+    m_H2_abs(i+1) = ya(end, 1);
+    m_MH_abs(i+1) = ya(end, 2);
+    T_abs(i+1)    = ya(end, 3);
+
+    <span class="comment">% Calculation of other parameters</span>
+    Peq_abs(i+1) = exp((DH_abs/(R*T_abs(i)))-DS_abs/R+sl*((m_MH_abs(i)/m_s)-0.5))*P0;           <span class="comment">% Absorption equilibrium pressure [Pa]</span>
+    r_abs(i+1)   = C_abs*exp(-E_abs/(R*T_abs(i)))*log(P_abs/Peq_abs(i))*(1-(m_MH_abs(i)/m_s));  <span class="comment">% Reaction rate                   [1/s]</span>
+
+    <span class="comment">% Calculate outlet water temperature</span>
+    DTb_abs(i+1)    = T_abs(i) - Tw_in_abs(i);                                                  <span class="comment">% Calculation of the new DTb               [K]</span>
+    DTa_abs(i+1)    = T_abs(i) - Tw_out_abs(i);                                                 <span class="comment">% Calculation of the new DTa               [K]</span>
+    DTml_abs(i+1)   = (DTb_abs(i+1) - DTa_abs(i+1)) / log(DTb_abs(i+1) / DTa_abs(i+1));         <span class="comment">% Calculation of the new DTml              [K]</span>
+    Tw_out_abs(i+1)   = Tw_in_abs(i) + (DTml_abs(i+1) * U * A) / (m_w_abs(i) * Cp_w * 1000);    <span class="comment">% Calculation of the new Tw_out            [K]</span>
+    Q_abs(i+1)      = (m_w_abs(i)*Cp_w*(Tw_out_abs(i+1)-Tw_in_abs(i)));                         <span class="comment">% Calculation of the heat (MH --&gt; water)   [kW]</span>
+
+    res_abs         = DTml_abs(i+1)*U*A/1000 - (Tw_out_abs(i+1)-Tw_in_abs(i))*m_w_abs(i)*Cp_w;  <span class="comment">% Energy balance equation to be verified</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+Qabs = Q_abs'; <span class="comment">% Transposition of the row vector in a column vector</span>
+</pre><h2 id="7">Desorption</h2><p>Desorption parameters</p><pre class="codeinput">C_des      = 9.6;      <span class="comment">% Kinetic constant              [1/s]</span>
+E_des      = 16420;    <span class="comment">% Desorption activation energy  [J/mol]</span>
+P_des      = 5E+05;    <span class="comment">% Desorption pressure           [Pa]</span>
+DH_des     = 30800;    <span class="comment">% Desorption enthalpy           [J/mol]</span>
+DS_des     = 108;      <span class="comment">% Desorption entropy            [J/mol K]</span>
+eps_des    = 10E-10;   <span class="comment">% Control value for energy balance</span>
+
+<span class="comment">% Variable inizialization</span>
+m_H2_des   = zeros(size(t_des)); <span class="comment">% Desorbed hydrogen mass   [kg]</span>
+m_MH_des   = zeros(size(t_des)); <span class="comment">% Metal hydride mass left  [kg]</span>
+T_des      = zeros(size(t_des)); <span class="comment">% System's temperature     [K]</span>
+Tw_out_des = zeros(size(t_des)); <span class="comment">% Outlet water temperature</span>
+DTb_des    = zeros(size(t_des)); <span class="comment">%</span>
+DTa_des    = zeros(size(t_des)); <span class="comment">%</span>
+DTml_des   = zeros(size(t_des)); <span class="comment">%</span>
+Peq_des    = zeros(size(t_des)); <span class="comment">% Equilibrium pressure     [Pa]</span>
+r_des      = zeros(size(t_des)); <span class="comment">% Reaction rate            [1/s]</span>
+
+<span class="comment">% Initial conditions for the first timestep</span>
+m_H2_des(1)   = 0;                     <span class="comment">% Desorbed hydrogen mass            [kg]</span>
+m_MH_des(1)   = m_MH_abs(end);         <span class="comment">% Metal hydride mass left           [kg]</span>
+T_des(1)      = T_abs(end);            <span class="comment">% System's temperature              [K]</span>
+Tw_out_des(1) = Tw_in_des(1)-10;       <span class="comment">% Initial outlet water temperature  [K]</span>
+DTb_des(1)  = Tw_in_des(1) - T_des(1);
+DTa_des(1)  = Tw_out_des(1) - T_des(1);
+DTml_des(1) = (DTb_des(1)-DTa_des(1))/(log(DTb_des(1)/DTa_des(1)));
+Peq_des(1)    = Peq_abs(end);          <span class="comment">% Initial equilibrium pressure      [Pa]</span>
+
+
+<span class="keyword">for</span> i = 1:numel(t_des)-1
+
+    res_des = 1000;         <span class="comment">% Initial value for the residual</span>
+
+    <span class="keyword">while</span> res_des &gt; eps_des <span class="comment">% We repeat the iteration if the energy balance is not verified</span>
+
+        <span class="keyword">if</span> i == 1           <span class="comment">%  "if" used to assign the initial condition based on the "i" index</span>
+            y0_d        = [m_H2_des(1); m_MH_des(1); T_des(1)]; <span class="comment">% Initial conditions for timestep = 1</span>
+            DTb_des(i)  = DTb_des(1);
+            DTa_des(i)  = DTa_des(1);
+            DTml_des(i) = DTml_des(1);
+        <span class="keyword">else</span>
+            y0_d = [m_H2_des(i); m_MH_des(i); T_des(i)];        <span class="comment">% Initial conditions for timestep &gt; 1</span>
+        <span class="keyword">end</span>
+
+    <span class="comment">% Define tspan for ODE resolution for current timestep</span>
+    tspan = [t_des(i) t_des(i+1)];
+
+    <span class="comment">% Function handle</span>
+    ode_fun_d = @(td, yd) Desorption(td, yd, m_H2_out(i), Tw_in_des(i), DTml_des(i), C_des, E_des, R, P_des, m_s, M_H2, SC, M_MH, Cp_H2, Cp_s, A, U, DH_des, DS_des, sl, P0);
+
+    <span class="comment">% Differential equation solver</span>
+    [td, yd] = ode23s(ode_fun_d, tspan, y0_d);
+
+    <span class="comment">% Store solutions for current timestep</span>
+    m_H2_des(i+1) = yd(end, 1);
+    m_MH_des(i+1) = yd(end, 2);
+    T_des(i+1)    = yd(end, 3);
+
+    <span class="comment">% Calculations of the other parameters</span>
+    Peq_des(i) = (exp(-(DH_des/(R*T_des(i)))+(DS_des/R)+sl*((m_MH_des(i)/m_s)-0.5)))*P0;           <span class="comment">% Desorption equilibrium pressure           [Pa]</span>
+    r_des(i)   = C_des*exp(-E_des/(R*T_des(i)))*((P_des-Peq_des(i))/Peq_des(i))*(m_MH_des(i)/m_s); <span class="comment">% Reaction rate                             [1/s]</span>
+
+    <span class="comment">% Calculate outlet water temperature</span>
+    DTb_des(i+1)  = Tw_in_des(i) - T_des(i);                                                       <span class="comment">% Calculation of the new DTb                [K]</span>
+    DTa_des(i+1)  = Tw_out_des(i) - T_des(i);                                                      <span class="comment">% Calculation of the new DTa                [K]</span>
+    DTml_des(i+1) = (DTb_des(i+1) - DTa_des(i+1)) / (log(DTb_des(i+1) / DTa_des(i+1)));            <span class="comment">% Calculation of the new DTml               [K]</span>
+    Tw_out_des(i+1) = Tw_in_des(i) - (DTml_des(i+1)*U*A)/(m_w_des(i)*Cp_w*1000);                   <span class="comment">% Calculation of the new Tw_out             [K]</span>
+    Q_des(i+1)        = (m_w_des(i)*Cp_w*(Tw_in_des(i)-Tw_out_des(i+1)));                          <span class="comment">% Calculation of the heat (water --&gt; MH)    [kW]</span>
+
+    res_des       = DTml_des(i+1)*U*A/1000 - (Tw_in_des(i)-Tw_out_des(i+1))*m_w_des(i)*Cp_w;       <span class="comment">% Energy balance equation to be verified</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+Qdes = Q_des'; <span class="comment">% Transposition of the row vector in a column vector</span>
+</pre><h2 id="8">Plot result</h2><pre class="codeinput"><span class="comment">% Temperatures</span>
+figure(1)
+
+    <span class="comment">%subplot(2,1,[1 1]);</span>
+    plot(t_abs, T_abs,<span class="string">'k'</span>,t_des, T_des,<span class="string">'r'</span>);
+    ylabel(<span class="string">'[K]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    ylim([260 360]);
+    title(<span class="string">'Metal Hydride Temperature "T_{MH}"'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlabel(<span class="string">'Time [s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    legend(<span class="string">'Absorption'</span>, <span class="string">'Desorption'</span>,<span class="string">'location'</span>,<span class="string">'northwest'</span>,<span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    hold <span class="string">on</span>
+    grid <span class="string">on</span>
+
+    <span class="comment">% subplot(2,2,3);</span>
+    <span class="comment">% riga1 = 'Absorption';</span>
+    <span class="comment">% riga2 = 'Outlet water temperature "T_{w,out}"';</span>
+    <span class="comment">% titolo = sprintf('%s\n%s', riga1, riga2);</span>
+    <span class="comment">% plot(t_abs, Tw_out_a,'k');</span>
+    <span class="comment">% ylabel('[K]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% ylim([280 295]);</span>
+    <span class="comment">% xlim([-100 2000]);</span>
+    <span class="comment">% xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% title(titolo, 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% hold on</span>
+    <span class="comment">% grid on</span>
+    <span class="comment">%</span>
+    <span class="comment">% subplot(2,2,4)</span>
+    <span class="comment">% riga1 = 'Desorption';</span>
+    <span class="comment">% riga2 = 'Outlet water temperature "T_{w,out}"';</span>
+    <span class="comment">% titolo = sprintf('%s\n%s', riga1, riga2);</span>
+    <span class="comment">% plot(t_des, Tw_out_d,'r');</span>
+    <span class="comment">% ylabel('[K]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% ylim([330 355]);</span>
+    <span class="comment">% title(titolo, 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% xlim([1700 3700]);</span>
+    <span class="comment">% xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);</span>
+    <span class="comment">% hold on</span>
+    <span class="comment">% grid on</span>
+
+
+figure (2)
+
+<span class="comment">% Hydride metal mass</span>
+    subplot(2, 2, 1);
+    plot(t_abs,m_MH_abs,<span class="string">'k'</span>,t_des, m_MH_des,<span class="string">'r'</span>);
+    ylabel(<span class="string">'[kg]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlabel(<span class="string">'Time [s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    title(<span class="string">'Metal Hydride mass "m_{MH}"'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold <span class="string">on</span>
+    grid <span class="string">on</span>
+
+<span class="comment">% Equilibrium pressure</span>
+    subplot(2, 2, 2);
+    plot(t_abs,Peq_abs/1E+05,<span class="string">'k'</span>,t_des, Peq_des/1E+05,<span class="string">'r'</span>);
+    ylabel(<span class="string">'[bar]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlabel(<span class="string">'Time [s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    title(<span class="string">'Equilibrium pressure "P_{eq}"'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold <span class="string">on</span>
+    grid <span class="string">on</span>
+
+<span class="comment">% Reaction rate</span>
+    subplot(2, 2, 3);
+    plot(t_abs, r_abs,<span class="string">'k'</span>,t_des, r_des,<span class="string">'r'</span>);
+    ylabel(<span class="string">'[1/s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlabel(<span class="string">'Time [s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    title(<span class="string">'Reaction rate "r"'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold <span class="string">on</span>
+    grid <span class="string">on</span>
+
+<span class="comment">% Hydrogen mass</span>
+    subplot(2, 2, 4);
+    plot(t_abs, m_H2_abs,<span class="string">'k'</span>,t_des, m_H2_des,<span class="string">'r'</span>);
+    ylabel(<span class="string">'[kg]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlabel(<span class="string">'Time [s]'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    title(<span class="string">'Hydrogen mass "m_{H_2}"'</span>, <span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'FontWeight'</span>,<span class="string">'bold'</span>, <span class="string">'FontSize'</span>,13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold <span class="string">on</span>
+    grid <span class="string">on</span>
+
+toc
+</pre><pre class="codeoutput">Elapsed time is 2.992947 seconds.
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear all; clc;
+tic
+%% Equations to be used
+% Calculation of m_s based on the quantity of m_H2 to be absorbed
+% m_s = (m_H2/wt_max) * 100  [kg]    con wt_max = 1.39
+% 
+% Calculation of hydrogen flowrate m_H2_in based on the quantity absorbed
+% m_H2_in = (2 * m_H2) / 3600  [kg/s]
+
+%% Parameters absorption and desorption
+rho_MH = 8310;        % Density of LaNi5                   [kg/m3]
+Vg     = 0.0172;      % Gas Volume                         [m3]
+R      = 8.314;       % Gas constant                       [J/mol K]
+M_H2   = 2.016/1000;  % Molar mass H2                      [kg/mol]
+M_MH   = 0.432;       % Molar mass   MH                    [kg/mol]
+Cp_H2  = 14300;       % Specific heat H2                   [J/kg K]
+Cp_s   = 355;         % Specific heat solid                [J/kg K]
+A      = 5.4;         % Area "heat interchange"            [m2]
+U      = 243;         % Overall heat transfer coefficient  [W/m2 K]
+sl     = 0.13;        % Slope coefficient                  [-]
+P0     = 1E+05;       % Reference pressure                 [Pa]
+m_s    = 143;         % Solid mass                         [kg]
+SC     = 3;           % Stoichiometric coefficient         [-]
+Cp_w   = 4.185;       % Specific heat water                [kJ/kg K] 
+
+%% Simulation time for absorption and desorption
+t_abs  = (0:1:1800)';                        % [s]
+t_des  = (t_abs(end)+1:1:2*t_abs(end)+1)';   % [s]
+
+%% Input parameters
+m_H2_in   = ones(numel(t_abs),1)*(4/3600);   % Input hydrogen flowrate               [kg/s]
+m_H2_out  = ones(numel(t_des),1)*(4/3600);   % Output hydrogen flowrate              [kg/s]
+Tw_in_abs = ones(numel(t_abs),1) * 286;      % Inlet cooling water temperature       [k]
+Tw_in_des = ones(numel(t_des),1) * 353;      % Inlet heating water temperature fixed [K]
+m_w_abs   = ones(numel(t_abs),1) * 1.1947;   % Project water flowrate for absor      [kg/s]
+m_w_des   = ones(numel(t_des),1) * 1.1947;   % Project water for desorption          [kg/s]
+
+%% Absorption
+%Absorption parameters
+C_abs      = 59.2;   % Kinetic constant                   [1/s]
+E_abs      = 21170;  % Absorption activation energy       [J/mol]
+P_abs      = 8E+05;  % Absorption pressure                [Pa]
+T_H2_in    = 290;    % H2 input temperature               [K]
+DH_abs     = -30478; % Absorption enthalpy                [J/mol]
+DS_abs     = -108;   % Absorption entropy                 [J/mol K]
+eps_abs    = 10E-10; % Control value for energy balance   [-]
+
+% Variable inizialization 
+m_H2_abs   = zeros(size(t_abs));  % Absorbed hydrogen mass           [kg]
+m_MH_abs   = zeros(size(t_abs));  % Metal hydride mass formed        [kg]
+T_abs      = zeros(size(t_abs));  % System's temperature             [K]
+Tw_out_abs = zeros(size(t_abs));  % Outlet water temperature         [K]
+DTb_abs    = zeros(size(t_abs));  % 
+DTa_abs    = zeros(size(t_abs));  % 
+DTml_abs   = zeros(size(t_abs));  % 
+Peq_abs    = zeros(size(t_abs));  % Equilibrium pressure             [Pa]
+r_abs      = zeros(size(t_abs));  % Reaction rate                    [1/s]
+
+% Initial conditions for the first timestep
+m_H2_abs(1)   = 0;                        % Absorbed hydrogen mass           [kg]
+m_MH_abs(1)   = 0;                        % Metal hydride mass               [kg]
+T_abs(1)      = 298;                      % System's temperature             [K]
+Tw_out_abs(1) = Tw_in_abs(1)+10;          % Initial outlet water temperature [K] 
+DTb_abs(1)    = T_abs(1) - Tw_in_abs(1); 
+DTa_abs(1)    = T_abs(1) - Tw_out_abs(1);  
+DTml_abs(1)   = (DTb_abs(1)-DTa_abs(1))/(log(DTb_abs(1)/DTa_abs(1)));
+
+for i = 1:numel(t_abs)-1    
+
+    res_abs = 1000;         % Initial value for the residual
+
+    while res_abs > eps_abs % We repeat the iteration if the energy balance is not verified
+
+    if i == 1               %  "if" used to assign the initial condition based on the "i" index
+        y0_a        = [m_H2_abs(1); m_MH_abs(1); T_abs(1)]; % Initial conditions for timestep = 1
+        DTb_abs(i)  = DTb_abs(1);
+        DTa_abs(i)  = DTa_abs(1);
+        DTml_abs(i) = (DTb_abs(1)-DTa_abs(1))/(log(DTb_abs(1)/DTa_abs(1)));
+    else
+        y0_a        = [m_H2_abs(i); m_MH_abs(i); T_abs(i)]; % Initial conditions for timestep > 1
+    end
+
+    % Define tspan for ODE resolution for current timestep
+    tspan = [t_abs(i) t_abs(i+1)];
+
+    % Function handle
+    ode_fun_a = @(ta, ya) Absorption(ta, ya, m_H2_in(i), Tw_in_abs(i), DTml_abs(i), m_s, A, U, P_abs, C_abs, E_abs, R, M_H2, SC, M_MH, Cp_H2, Cp_s, T_H2_in, DH_abs, DS_abs, sl, P0);
+
+    % Differential equation solver
+    [ta, ya] = ode23s(ode_fun_a, tspan, y0_a);
+
+    % Store solutions for current timestep 
+    m_H2_abs(i+1) = ya(end, 1);
+    m_MH_abs(i+1) = ya(end, 2);
+    T_abs(i+1)    = ya(end, 3);
+
+    % Calculation of other parameters
+    Peq_abs(i+1) = exp((DH_abs/(R*T_abs(i)))-DS_abs/R+sl*((m_MH_abs(i)/m_s)-0.5))*P0;           % Absorption equilibrium pressure [Pa]
+    r_abs(i+1)   = C_abs*exp(-E_abs/(R*T_abs(i)))*log(P_abs/Peq_abs(i))*(1-(m_MH_abs(i)/m_s));  % Reaction rate                   [1/s]
+
+    % Calculate outlet water temperature
+    DTb_abs(i+1)    = T_abs(i) - Tw_in_abs(i);                                                  % Calculation of the new DTb               [K]
+    DTa_abs(i+1)    = T_abs(i) - Tw_out_abs(i);                                                 % Calculation of the new DTa               [K]
+    DTml_abs(i+1)   = (DTb_abs(i+1) - DTa_abs(i+1)) / log(DTb_abs(i+1) / DTa_abs(i+1));         % Calculation of the new DTml              [K]
+    Tw_out_abs(i+1)   = Tw_in_abs(i) + (DTml_abs(i+1) * U * A) / (m_w_abs(i) * Cp_w * 1000);    % Calculation of the new Tw_out            [K]
+    Q_abs(i+1)      = (m_w_abs(i)*Cp_w*(Tw_out_abs(i+1)-Tw_in_abs(i)));                         % Calculation of the heat (MH REPLACE_WITH_DASH_DASH> water)   [kW]
+
+    res_abs         = DTml_abs(i+1)*U*A/1000 - (Tw_out_abs(i+1)-Tw_in_abs(i))*m_w_abs(i)*Cp_w;  % Energy balance equation to be verified 
+    end
+end
+
+Qabs = Q_abs'; % Transposition of the row vector in a column vector 
+
+%% Desorption
+% Desorption parameters
+
+C_des      = 9.6;      % Kinetic constant              [1/s]
+E_des      = 16420;    % Desorption activation energy  [J/mol]
+P_des      = 5E+05;    % Desorption pressure           [Pa]
+DH_des     = 30800;    % Desorption enthalpy           [J/mol]
+DS_des     = 108;      % Desorption entropy            [J/mol K]
+eps_des    = 10E-10;   % Control value for energy balance
+
+% Variable inizialization
+m_H2_des   = zeros(size(t_des)); % Desorbed hydrogen mass   [kg]
+m_MH_des   = zeros(size(t_des)); % Metal hydride mass left  [kg]
+T_des      = zeros(size(t_des)); % System's temperature     [K]
+Tw_out_des = zeros(size(t_des)); % Outlet water temperature
+DTb_des    = zeros(size(t_des)); %
+DTa_des    = zeros(size(t_des)); %
+DTml_des   = zeros(size(t_des)); %
+Peq_des    = zeros(size(t_des)); % Equilibrium pressure     [Pa]
+r_des      = zeros(size(t_des)); % Reaction rate            [1/s]
+
+% Initial conditions for the first timestep
+m_H2_des(1)   = 0;                     % Desorbed hydrogen mass            [kg]
+m_MH_des(1)   = m_MH_abs(end);         % Metal hydride mass left           [kg]
+T_des(1)      = T_abs(end);            % System's temperature              [K]
+Tw_out_des(1) = Tw_in_des(1)-10;       % Initial outlet water temperature  [K]
+DTb_des(1)  = Tw_in_des(1) - T_des(1);
+DTa_des(1)  = Tw_out_des(1) - T_des(1);
+DTml_des(1) = (DTb_des(1)-DTa_des(1))/(log(DTb_des(1)/DTa_des(1)));
+Peq_des(1)    = Peq_abs(end);          % Initial equilibrium pressure      [Pa]
+
+
+for i = 1:numel(t_des)-1
+
+    res_des = 1000;         % Initial value for the residual
+
+    while res_des > eps_des % We repeat the iteration if the energy balance is not verified
+
+        if i == 1           %  "if" used to assign the initial condition based on the "i" index
+            y0_d        = [m_H2_des(1); m_MH_des(1); T_des(1)]; % Initial conditions for timestep = 1
+            DTb_des(i)  = DTb_des(1);
+            DTa_des(i)  = DTa_des(1);
+            DTml_des(i) = DTml_des(1);
+        else
+            y0_d = [m_H2_des(i); m_MH_des(i); T_des(i)];        % Initial conditions for timestep > 1
+        end
+
+    % Define tspan for ODE resolution for current timestep
+    tspan = [t_des(i) t_des(i+1)];
+
+    % Function handle
+    ode_fun_d = @(td, yd) Desorption(td, yd, m_H2_out(i), Tw_in_des(i), DTml_des(i), C_des, E_des, R, P_des, m_s, M_H2, SC, M_MH, Cp_H2, Cp_s, A, U, DH_des, DS_des, sl, P0);
+    
+    % Differential equation solver
+    [td, yd] = ode23s(ode_fun_d, tspan, y0_d);
+
+    % Store solutions for current timestep
+    m_H2_des(i+1) = yd(end, 1);
+    m_MH_des(i+1) = yd(end, 2);
+    T_des(i+1)    = yd(end, 3);
+
+    % Calculations of the other parameters
+    Peq_des(i) = (exp(-(DH_des/(R*T_des(i)))+(DS_des/R)+sl*((m_MH_des(i)/m_s)-0.5)))*P0;           % Desorption equilibrium pressure           [Pa]
+    r_des(i)   = C_des*exp(-E_des/(R*T_des(i)))*((P_des-Peq_des(i))/Peq_des(i))*(m_MH_des(i)/m_s); % Reaction rate                             [1/s]
+
+    % Calculate outlet water temperature
+    DTb_des(i+1)  = Tw_in_des(i) - T_des(i);                                                       % Calculation of the new DTb                [K]
+    DTa_des(i+1)  = Tw_out_des(i) - T_des(i);                                                      % Calculation of the new DTa                [K]
+    DTml_des(i+1) = (DTb_des(i+1) - DTa_des(i+1)) / (log(DTb_des(i+1) / DTa_des(i+1)));            % Calculation of the new DTml               [K]
+    Tw_out_des(i+1) = Tw_in_des(i) - (DTml_des(i+1)*U*A)/(m_w_des(i)*Cp_w*1000);                   % Calculation of the new Tw_out             [K]
+    Q_des(i+1)        = (m_w_des(i)*Cp_w*(Tw_in_des(i)-Tw_out_des(i+1)));                          % Calculation of the heat (water REPLACE_WITH_DASH_DASH> MH)    [kW]
+
+    res_des       = DTml_des(i+1)*U*A/1000 - (Tw_in_des(i)-Tw_out_des(i+1))*m_w_des(i)*Cp_w;       % Energy balance equation to be verified
+    end
+end
+
+Qdes = Q_des'; % Transposition of the row vector in a column vector 
+
+%% Plot result
+
+% Temperatures
+figure(1)
+
+    %subplot(2,1,[1 1]);
+    plot(t_abs, T_abs,'k',t_des, T_des,'r');
+    ylabel('[K]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    ylim([260 360]);
+    title('Metal Hydride Temperature "T_{MH}"', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    legend('Absorption', 'Desorption','location','northwest','FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    hold on
+    grid on
+
+    % subplot(2,2,3);
+    % riga1 = 'Absorption';
+    % riga2 = 'Outlet water temperature "T_{w,out}"';
+    % titolo = sprintf('%s\n%s', riga1, riga2);
+    % plot(t_abs, Tw_out_a,'k');
+    % ylabel('[K]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % ylim([280 295]);
+    % xlim([-100 2000]);
+    % xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % title(titolo, 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % hold on
+    % grid on
+    % 
+    % subplot(2,2,4)
+    % riga1 = 'Desorption';
+    % riga2 = 'Outlet water temperature "T_{w,out}"';
+    % titolo = sprintf('%s\n%s', riga1, riga2);
+    % plot(t_des, Tw_out_d,'r');
+    % ylabel('[K]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % ylim([330 355]);
+    % title(titolo, 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % xlim([1700 3700]);
+    % xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    % hold on
+    % grid on
+ 
+
+figure (2)
+
+% Hydride metal mass
+    subplot(2, 2, 1);
+    plot(t_abs,m_MH_abs,'k',t_des, m_MH_des,'r');
+    ylabel('[kg]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    title('Metal Hydride mass "m_{MH}"', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold on
+    grid on
+
+% Equilibrium pressure
+    subplot(2, 2, 2);
+    plot(t_abs,Peq_abs/1E+05,'k',t_des, Peq_des/1E+05,'r');
+    ylabel('[bar]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    title('Equilibrium pressure "P_{eq}"', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold on
+    grid on
+
+% Reaction rate
+    subplot(2, 2, 3);
+    plot(t_abs, r_abs,'k',t_des, r_des,'r');
+    ylabel('[1/s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    title('Reaction rate "r"', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold on
+    grid on
+
+% Hydrogen mass
+    subplot(2, 2, 4);
+    plot(t_abs, m_H2_abs,'k',t_des, m_H2_des,'r');
+    ylabel('[kg]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlabel('Time [s]', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    title('Hydrogen mass "m_{H_2}"', 'FontName','Times New Roman','FontWeight','bold', 'FontSize',13);
+    xlim([t_abs(1)-100 t_des(end)+100]);
+    hold on
+    grid on
+
+toc
+
+##### SOURCE END #####
+--></body></html>
